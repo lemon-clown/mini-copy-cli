@@ -30,8 +30,10 @@
     "webpack": "^4.19.0"
   },
   "dependencies": {
+    "@types/clipboardy": "^1.1.0",
     "@types/fs-extra": "^5.0.4",
     "@types/node": "^10.9.4",
+    "clipboardy": "^1.2.3",
     "fs-extra": "^7.0.0"
   }
 }
