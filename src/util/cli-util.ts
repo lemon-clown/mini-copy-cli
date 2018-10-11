@@ -51,7 +51,6 @@ export const yesOrNo = async (desc: string, defaultValue: boolean = false): Prom
 
 
 /**
- * 执行完之后结束程序
  * exit process when completed all processing.
  * @param fn
  */
@@ -62,3 +61,9 @@ export const doneWithClose = (fn: (...args: any[]) => Promise<void>) => (...args
     process.exit(0)
   })()
 }
+
+
+/**
+ * close stream resources manually.
+ */
+export const closeStream = () => rl.close()

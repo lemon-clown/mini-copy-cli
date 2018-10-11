@@ -2,7 +2,7 @@ import fs from 'fs-extra'
 import chalk from 'chalk'
 import program from 'commander'
 import clipboard from 'clipboardy'
-import { doneWithClose, yesOrNo } from '@/util/cli-util'
+import { closeStream, doneWithClose, yesOrNo } from '@/util/cli-util'
 import { ensureFileExist, isFile } from '@/util/fs-util'
 import manifest from '../package.json'
 
@@ -24,14 +24,35 @@ program
 
 
 doneWithClose(async (filepath: string, option: CmdOption) => {
+  const { encoding = 'UTF-8', output = false, force = false } = option
+
   // if filepath is not exist, print the content of the system clipboard to the terminal
+  // thanks to https://github.com/sindresorhus/clipboard-cli
   if (filepath == null) {
-    const content: string = await clipboard.read()
-    process.stdout.write(content)
+    // close stream, otherwise the terminal will echo content from stdin
+    closeStream()
+    if (process.stdin.isTTY || process.env.STDIN === '0') {
+      const content: string = clipboard.readSync()
+      process.stdout.write(content, encoding)
+    } else {
+      const content: string = await new Promise<string>(resolve => {
+        let ret: string = ''
+        const stdin = process.stdin
+
+        if (stdin.isTTY) return resolve(ret)
+        stdin
+          .setEncoding(encoding)
+          .on('readable', () => {
+            for (let chunk; chunk = stdin.read();) ret += chunk
+          })
+          .on('end', () => {
+            resolve(ret)
+          })
+      })
+      clipboard.writeSync(content)
+    }
     return
   }
-
-  const { encoding = 'UTF-8', output = false, force = false } = option
 
   // if the option 'output' is specified, then output to filepath
   if (output) {
@@ -50,7 +71,7 @@ doneWithClose(async (filepath: string, option: CmdOption) => {
 
     let content: string = ''
     try {
-      content = await clipboard.read()
+      content = clipboard.readSync()
     } catch (e) {
       console.log(chalk.magenta('read the system clipboard failed.'))
       process.exit(-1)
@@ -64,7 +85,7 @@ doneWithClose(async (filepath: string, option: CmdOption) => {
   await ensureFileExist(filepath)
   const content: string = await fs.readFile(filepath, { encoding })
   try {
-    await clipboard.write(content)
+    clipboard.writeSync(content)
     console.log(chalk.green(`copied from ${filepath}.`))
   } catch (e) {
     console.log(chalk.magenta('write into the system clipboard failed.'))
