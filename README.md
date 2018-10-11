@@ -1,6 +1,6 @@
 # Install
 ```shell
-npm install -g mcp
+npm install -g mini-copy-cli
 ```
 
 
