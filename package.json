@@ -1,8 +1,8 @@
 {
   "name": "mini-copy-cli",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "author": "lemonclown",
-  "description": "copy from file to clipboard | paste into file from clipboard",
+  "description": "copy from file to clipboard | paste into file from clipboard & support sharing clipboard between wsl and windows.",
   "bin": {
     "mcp": "target/main.js"
   },
@@ -15,7 +15,8 @@
     "typescript",
     "clipboard",
     "copy",
-    "paste"
+    "paste",
+    "wsl"
   ],
   "license": "MIT",
   "devDependencies": {
@@ -34,6 +35,7 @@
     "@types/fs-extra": "^5.0.4",
     "@types/node": "^10.9.4",
     "clipboardy": "^1.2.3",
-    "fs-extra": "^7.0.0"
+    "fs-extra": "^7.0.0",
+    "iconv-lite": "^0.4.24"
   }
 }

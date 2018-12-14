@@ -40,4 +40,4 @@ export default {
   mode: 'production',
   target: 'node',
   externals: paths.appExternals,
-}
+} as webpack.Configuration

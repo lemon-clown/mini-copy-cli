@@ -27,3 +27,19 @@ mcp -o data.out -f          # if the data.out is exist, overwrite it without con
 # show usage
 mcp --help
 ```
+
+# for wsl and windows
+* v1.1.0: sharing the clipboard between wsl and windows.
+* for vim:
+  ```vimrc
+  " for wsl bi-directional clipboard
+  let s:clip = '/usr/me/bin/mcp'      " replace with your path (which mcp), same as the below.
+  if executable(s:clip)
+      noremap "+p :exe 'norm a'.system('/usr/me/bin/mcp --force-paste')<CR>
+      augroup WSLYank
+          autocmd!
+          autocmd TextYankPost * call system('echo '.shellescape(join(v:event.regcontents, "\<CR>")).' | '.s:clip)
+      augroup end
+  endif
+  ```
+* thanks for [northerlywind 's answer](https://vi.stackexchange.com/a/16114/20180)
