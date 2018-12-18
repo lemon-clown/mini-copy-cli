@@ -11,7 +11,8 @@ mcp
 
 
 # copy the content of data.in to the system clipboard
-mcp data.in
+mcp 'the data'
+mcp -i data.in
 mcp < data.in
 cat data.in | mcp
 echo 'Hello world' | mcp

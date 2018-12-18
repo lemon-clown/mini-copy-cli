@@ -1,11 +1,23 @@
 import chalk from 'chalk'
-import readline from 'readline'
+import readline, { Interface } from 'readline'
 
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-})
+let rl: Interface
+const initStream = () => {
+  if (rl != null) return
+  rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+}
+
+
+/**
+ * close stream resources manually.
+ */
+export const closeStream = () => {
+  if (rl != null) rl.close()
+}
 
 
 /**
@@ -17,6 +29,7 @@ const rl = readline.createInterface({
  */
 export const question = async (desc: string, clearConsole?: boolean): Promise<string> => {
   return await new Promise<string>(resolve => {
+    if (rl == null) initStream()
     rl.question(desc, (answer: string) => {
       if (clearConsole) {
         // clear this lines in terminal, prepare for reprinting.
@@ -54,16 +67,10 @@ export const yesOrNo = async (desc: string, defaultValue: boolean = false): Prom
  * exit process when completed all processing.
  * @param fn
  */
-export const doneWithClose = (fn: (...args: any[]) => Promise<void>) => (...args: any[]) => {
-  (async () => {
+export const doneWithClose = (fn: (...args: any[]) => Promise<void>) => (...args: any[]): Promise<void> => {
+  return (async () => {
     await fn(...args)
-    rl.close()
+    closeStream()
     process.exit(0)
   })()
 }
-
-
-/**
- * close stream resources manually.
- */
-export const closeStream = () => rl.close()

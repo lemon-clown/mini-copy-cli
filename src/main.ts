@@ -1,111 +1,96 @@
-import fs from 'fs-extra'
-import chalk from 'chalk'
 import program from 'commander'
-import { copy, paste } from '@/util/clipboard'
-import { ensureFileExist, isFile } from '@/util/fs-util'
-import { closeStream, doneWithClose, yesOrNo } from '@/util/cli-util'
+import { copy } from '@/util/clipboard'
+import { doneWithClose } from '@/util/cli-util'
+import { logger } from '@/util/logger'
+import { copyFromFile, copyFromStdin, pasteToFile, pasteToStdout } from './handler'
 import manifest from '../package.json'
 
 
 interface CmdOption {
   encoding?: string
-  output?: boolean
+  output?: string
+  input?: string
   force?: boolean
-  forcePaste: boolean
+  forcePaste?: boolean
+  silence?: boolean
+  content?: string
 }
 
 
 program
   .version(manifest.version)
-  .arguments('[filepath]')
+  .arguments('[content]')
+  .option('--log-level <level>', 'index logger\'s level.')
+  .option('--log-option <option>', 'index logger\' option. (date,colorful)')
   .option('-e, --encoding <encoding>', 'specified <filepath>\'s encoding')
-  .option('-o, --output', 'output the content from the system clipboard into <filepath>.')
+  .option('-i, --input <filepath>', 'copy the data from the <filepath> to the system clipboard.')
+  .option('-o, --output <filepath>', 'output the data from the system clipboard into <filepath>.')
   .option('-f, --force', 'overwrite the <filepath> without confirmation.')
-  .option('--force-paste')
+  .option('-s, --silence', 'don\'t print info-level log.')
+  .option('--force-paste', 'force paste the content of the system clipboard without copy even piped data.')
   .parse(process.argv)
 
 
-doneWithClose(async (filepath: string, option: CmdOption) => {
-  const { encoding = 'UTF-8', output = false, force = false, forcePaste = false } = option
+doneWithClose(async (sourceContent: string, option: CmdOption) => {
+  const {
+    encoding = 'UTF-8',
+    input,
+    output,
+    force = false,
+    silence = false,
+    forcePaste = false,
+  } = option
+
+
+  logger.debug('encoding:', encoding)
+  logger.debug('input:', input)
+  logger.debug('output:', output)
+  logger.debug('force:', force)
+  logger.debug('silence:', silence)
+  logger.debug('forcePaste:', forcePaste)
+  logger.debug('sourceContent:', sourceContent)
 
   // if filepath is not exist, print the content of the system clipboard to the terminal
   // thanks to https://github.com/sindresorhus/clipboard-cli
-  if (filepath == null) {
-    // close stream, otherwise the terminal will echo content from stdin
-    closeStream()
+  if (sourceContent == null) {
     if (process.stdin.isTTY || process.env.STDIN === '0' || forcePaste) {
-      try {
-        const content: string = await paste()
-        process.stdout.write(content, encoding)
-      } catch (e) {
-        console.log(chalk.magenta('read the system clipboard failed.'))
-        console.log(chalk.red(e))
-        process.exit(-1)
+      // paste to file
+      if (output != null) {
+        logger.debug(`paste to ${output}.`)
+        await pasteToFile(output, encoding, force, !silence)
+        return
       }
-    } else {
-      const content: string = await new Promise<string>(resolve => {
-        let ret: string = ''
-        const stdin = process.stdin
 
-        if (stdin.isTTY) return resolve(ret)
-        stdin
-          .setEncoding(encoding)
-          .on('readable', () => {
-            for (let chunk; (chunk = stdin.read()) != null;) ret += chunk
-          })
-          .on('end', () => {
-            resolve(ret)
-          })
-      })
-      try {
-        await copy(content)
-        console.log(chalk.green(`copied into system clipboard.`))
-      } catch (e) {
-        console.log(chalk.magenta('write into the system clipboard failed.'))
-        console.log(chalk.red(e))
-        process.exit(-1)
+      if (forcePaste) {
+        // paste to stdout
+        logger.debug(`paste to stdout.`)
+        await pasteToStdout(encoding, forcePaste)
+        return
       }
+
+      // copy from file
+      if (input != null) {
+        logger.debug(`paste to ${input}.`)
+        await copyFromFile(input, encoding, !silence)
+      }
+
+      // paste to stdout
+      logger.debug(`paste to stdout.`)
+      await pasteToStdout(encoding, forcePaste)
+      return
     }
+
+    // copy data from stdin
+    logger.debug(`copy from stdin.`)
+    await copyFromStdin(encoding, !silence)
     return
   }
 
-  // if the option 'output' is specified, then output to filepath
-  if (output) {
-    if (fs.existsSync(filepath)) {
-      if (!await isFile(filepath)) {
-        console.log(chalk.magenta(`${filepath} is not a file.`))
-        process.exit(-1)
-      }
-
-      // the filepath is exists, wait for user's confirmation to overwrite it.
-      if (!force) {
-        const flag: boolean = await yesOrNo(`overwrite ${filepath}`)
-        if (!flag) return
-      }
-    }
-
-    let content: string = ''
-    try {
-      content = await paste()
-    } catch (e) {
-      console.log(chalk.magenta('read the system clipboard failed.'))
-      console.log(chalk.red(e))
-      process.exit(-1)
-    }
-    await fs.writeFile(filepath, content, { encoding })
-    console.log(chalk.green(`pasted into ${filepath}.`))
-    return
-  }
-
-  // copy the content from filepath to the system clipboard.
-  await ensureFileExist(filepath)
-  const content: string = await fs.readFile(filepath, { encoding })
-  try {
-    await copy(content)
-    console.log(chalk.green(`copied from ${filepath}.`))
-  } catch (e) {
-    console.log(chalk.magenta('write into the system clipboard failed.'))
-    console.log(chalk.red(e))
-    process.exit(-1)
-  }
+  // copy from sourceContent
+  logger.debug(`copy from argument.`)
+  await copy(sourceContent)
 })(program.args[0], program)
+  .catch(error => {
+    logger.debug(error)
+    process.exit(-1)
+  })
