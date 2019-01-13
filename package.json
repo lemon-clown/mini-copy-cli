@@ -1,6 +1,6 @@
 {
   "name": "mini-copy-cli",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "author": "lemonclown",
   "description": "copy from file to clipboard | paste into file from clipboard & support sharing clipboard between wsl and windows.",
   "bin": {
@@ -35,7 +35,9 @@
     "@types/fs-extra": "^5.0.4",
     "@types/node": "^10.9.4",
     "clipboardy": "^1.2.3",
+    "colorful-chalk-logger": "^0.3.2",
     "fs-extra": "^7.0.0",
-    "iconv-lite": "^0.4.24"
+    "iconv-lite": "^0.4.24",
+    "mini-copy": "^0.1.3"
   }
 }

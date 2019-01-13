@@ -1,7 +1,8 @@
+import fs from 'fs-extra'
 import program from 'commander'
-import { copy } from '@/util/clipboard'
-import { doneWithClose } from '@/util/cli-util'
 import { logger } from '@/util/logger'
+import { copy } from '@/util/copy-paste'
+import { doneWithClose } from '@/util/cli-util'
 import { copyFromFile, copyFromStdin, pasteToFile, pasteToStdout } from './handler'
 import manifest from '../package.json'
 
@@ -14,20 +15,24 @@ interface CmdOption {
   forcePaste?: boolean
   silence?: boolean
   content?: string
+  cat?: string
 }
 
 
 program
   .version(manifest.version)
   .arguments('[content]')
-  .option('--log-level <level>', 'index logger\'s level.')
-  .option('--log-option <option>', 'index logger\' option. (date,colorful)')
+
+logger.registerToCommander(program)
+
+program
   .option('-e, --encoding <encoding>', 'specified <filepath>\'s encoding')
   .option('-i, --input <filepath>', 'copy the data from the <filepath> to the system clipboard.')
   .option('-o, --output <filepath>', 'output the data from the system clipboard into <filepath>.')
   .option('-f, --force', 'overwrite the <filepath> without confirmation.')
   .option('-s, --silence', 'don\'t print info-level log.')
   .option('--force-paste', 'force paste the content of the system clipboard without copy even piped data.')
+  .option('--cat <filepath>', 'output file content without extra new line break.')
   .parse(process.argv)
 
 
@@ -39,9 +44,11 @@ doneWithClose(async (sourceContent: string, option: CmdOption) => {
     force = false,
     silence = false,
     forcePaste = false,
+    cat,
   } = option
 
 
+  logger.debug('cat:', cat)
   logger.debug('encoding:', encoding)
   logger.debug('input:', input)
   logger.debug('output:', output)
@@ -49,6 +56,14 @@ doneWithClose(async (sourceContent: string, option: CmdOption) => {
   logger.debug('silence:', silence)
   logger.debug('forcePaste:', forcePaste)
   logger.debug('sourceContent:', sourceContent)
+
+  if (cat != null) {
+    let content = await fs.readFileSync(cat, 'utf-8')
+    if (/(?:\r\n|\n\r)$/.test(content)) content = content.slice(0, -2)
+    else if (/[\r\n]$/.test(content)) content = content.slice(0, -1)
+    await new Promise(resolve => process.stdout.write(content, encoding, resolve))
+    process.exit(-1)
+  }
 
   // if filepath is not exist, print the content of the system clipboard to the terminal
   // thanks to https://github.com/sindresorhus/clipboard-cli
@@ -89,6 +104,7 @@ doneWithClose(async (sourceContent: string, option: CmdOption) => {
   // copy from sourceContent
   logger.debug(`copy from argument.`)
   await copy(sourceContent)
+  if (!silence) logger.info(`copied into system clipboard.`)
 })(program.args[0], program)
   .catch(error => {
     logger.debug(error)

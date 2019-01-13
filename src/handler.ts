@@ -1,8 +1,8 @@
 import fs from 'fs-extra'
-import { yesOrNo } from '@/util/cli-util'
-import { ensureFileExist, isFile } from '@/util/fs-util'
-import { copy, paste } from '@/util/clipboard'
 import { logger } from '@/util/logger'
+import { yesOrNo } from '@/util/cli-util'
+import { copy, paste } from '@/util/copy-paste'
+import { ensureFileExist, isFile } from '@/util/fs-util'
 
 
 /**
@@ -36,7 +36,7 @@ export async function copyFromStdin(encoding: string, showMessage: boolean) {
         for (let chunk; (chunk = stdin.read()) != null;) ret += chunk
       })
       .on('end', () => {
-        resolve(ret)
+        resolve(ret.replace(/^([^]*?)(?:\r\n|\n\r|[\n\r])$/, '$1'))
       })
   })
   await copy(content)
