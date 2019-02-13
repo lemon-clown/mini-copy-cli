@@ -70,7 +70,7 @@ export async function pasteToFile(filepath: string,
 
   const content: string = await paste()
   await fs.writeFile(filepath, content, { encoding })
-  if (showMessage) logger.info('pasted into ${filepath}.')
+  if (showMessage) logger.info(`pasted into ${filepath}.`)
   return
 }
 
