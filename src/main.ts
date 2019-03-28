@@ -85,8 +85,9 @@ doneWithClose(async (sourceContent: string, option: CmdOption) => {
 
       // copy from file
       if (input != null) {
-        logger.debug(`paste to ${input}.`)
+        logger.debug(`copy from ${input}.`)
         await copyFromFile(input, encoding, !silence)
+        return
       }
 
       // paste to stdout
