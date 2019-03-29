@@ -15,7 +15,8 @@ interface CmdOption {
   forcePaste?: boolean
   silence?: boolean
   content?: string
-  cat?: string
+  cat?: string          // 打印文件的内容
+  fake?: string         // fake-clipboard 使用的临时文件路径
 }
 
 
@@ -33,6 +34,7 @@ program
   .option('-s, --silence', 'don\'t print info-level log.')
   .option('--force-paste', 'force paste the content of the system clipboard without copy even piped data.')
   .option('--cat <filepath>', 'output file content without extra new line break.')
+  .option('--fake [fake-file-path]', 'use fake clipboard if the system clipboard is inaccessible.')
   .parse(process.argv)
 
 
@@ -45,6 +47,7 @@ doneWithClose(async (sourceContent: string, option: CmdOption) => {
     silence = false,
     forcePaste = false,
     cat,
+    fake,
   } = option
 
 
@@ -72,39 +75,39 @@ doneWithClose(async (sourceContent: string, option: CmdOption) => {
       // paste to file
       if (output != null) {
         logger.debug(`paste to ${output}.`)
-        await pasteToFile(output, encoding, force, !silence)
+        await pasteToFile(output, encoding, force, !silence, fake)
         return
       }
 
       if (forcePaste) {
         // paste to stdout
         logger.debug(`paste to stdout.`)
-        await pasteToStdout(encoding, forcePaste)
+        await pasteToStdout(encoding, forcePaste, fake)
         return
       }
 
       // copy from file
       if (input != null) {
         logger.debug(`copy from ${input}.`)
-        await copyFromFile(input, encoding, !silence)
+        await copyFromFile(input, encoding, !silence, fake)
         return
       }
 
       // paste to stdout
       logger.debug(`paste to stdout.`)
-      await pasteToStdout(encoding, forcePaste)
+      await pasteToStdout(encoding, forcePaste, fake)
       return
     }
 
     // copy data from stdin
     logger.debug(`copy from stdin.`)
-    await copyFromStdin(encoding, !silence)
+    await copyFromStdin(encoding, !silence, fake)
     return
   }
 
   // copy from sourceContent
   logger.debug(`copy from argument.`)
-  await copy(sourceContent)
+  await copy(sourceContent, fake)
   if (!silence) logger.info(`copied into system clipboard.`)
 })(program.args[0], program)
   .catch(error => {

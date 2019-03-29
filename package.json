@@ -38,6 +38,6 @@
     "colorful-chalk-logger": "^0.3.2",
     "fs-extra": "^7.0.0",
     "iconv-lite": "^0.4.24",
-    "mini-copy": "^0.1.6"
+    "mini-copy": "^0.1.7"
   }
 }

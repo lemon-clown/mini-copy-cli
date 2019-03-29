@@ -1672,10 +1672,10 @@ mimic-fn@^1.0.0:
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-1.2.0.tgz#820c86a39334640e99516928bd03fca88057d022"
   integrity sha512-jf84uxzwiuiIVKiOLpfYk7N46TSy8ubTonmneY9vrpHNAnp0QBt2BxWV9dO3/j+BoVAb+a5G6YDPW3M5HOdMWQ==
 
-mini-copy@^0.1.6:
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/mini-copy/-/mini-copy-0.1.6.tgz#982c9f8bb441750bc61128eab4f457bbbd862ca6"
-  integrity sha512-n8QjxjDzTAse6Bb68rfrPXsgZLU7doTSdGjD11JAwptU4z3IP9Zo9ao6Jvdo6ZJgVZpguJ7G2mC8AddhKrQStA==
+mini-copy@^0.1.7:
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/mini-copy/-/mini-copy-0.1.7.tgz#889528e1179d429df0b3bfadd1d37f134d335fcb"
+  integrity sha512-8/0dQPdrFY2jdPFnS79apII+f5dJX58QWVriulh4C0nBUsfZd25+G4nXgbLmjYynKkwhI7ZIKGaBzh1QBNqXrg==
   dependencies:
     "@types/clipboardy" "^1.1.0"
     "@types/execa" "^0.9.0"
