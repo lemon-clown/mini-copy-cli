@@ -52,6 +52,7 @@ doneWithClose(async (sourceContent: string, option: CmdOption) => {
 
 
   logger.debug('cat:', cat)
+  logger.debug('fake:', fake)
   logger.debug('encoding:', encoding)
   logger.debug('input:', input)
   logger.debug('output:', output)
