@@ -1,6 +1,6 @@
 {
   "name": "mini-copy-cli",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "author": "lemonclown",
   "description": "copy from file to clipboard | paste into file from clipboard & support sharing clipboard between wsl and windows.",
   "bin": {
