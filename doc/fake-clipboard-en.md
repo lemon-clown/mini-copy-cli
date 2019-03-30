@@ -87,7 +87,7 @@ fake-clipboard option is designed for non-gui server
 * use script
   - make sure you have config ssh properly
   - install `mini-copy-cli` on your local machine (or just use your system clipboard)
-  - create a script to `/usr/bin/remote-mcp` with content:
+  - create a script to `/usr/bin/remote-mcp` with content (need `mcp-copy-cli@1.3.4^`):
     ```shell
     #! /usr/bin/env bash
 
@@ -118,9 +118,9 @@ fake-clipboard option is designed for non-gui server
         ;;
       ("--paste"*)
         tmp_file_name="/tmp/.mcp_clipboard"
-        mcp -sof ${tmp_file_name}
-        scp ${tmp_file_name} ${remote_host}:${tmp_file_name} 2&> /dev/null
-        ssh ${remote_host} "$REMOTE_MCP_PATH -i $tmp_file_name" 2&> /dev/null
+        mcp -o ${tmp_file_name} -sf
+        scp -q ${tmp_file_name} ${remote_host}:${tmp_file_name}
+        ssh ${remote_host} "$REMOTE_MCP_PATH -i $tmp_file_name" 2>/dev/null
         echo -e "\033[01;30m$(date '+%Y-%m-%d %H:%M:%S') \033[01;00m[\033[01;32minfo  \033[01;30mmcp\033[01;00m]: \033[01;32mpasted to $remote_host."
         ;;
       *)
