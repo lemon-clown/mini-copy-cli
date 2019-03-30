@@ -120,7 +120,7 @@ fake-clipboard option is designed for non-gui server
         tmp_file_name="/tmp/.mcp_clipboard"
         mcp -o ${tmp_file_name} -sf
         scp -q ${tmp_file_name} ${remote_host}:${tmp_file_name}
-        ssh ${remote_host} "$REMOTE_MCP_PATH -i $tmp_file_name" 2>/dev/null
+        ssh ${remote_host} "$REMOTE_MCP_PATH -i $tmp_file_name" 2>&1 > /dev/null
         echo -e "\033[01;30m$(date '+%Y-%m-%d %H:%M:%S') \033[01;00m[\033[01;32minfo  \033[01;30mmcp\033[01;00m]: \033[01;32mpasted to $remote_host."
         ;;
       *)
