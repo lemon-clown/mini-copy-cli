@@ -72,7 +72,7 @@ doneWithClose(async (sourceContent: string, option: CmdOption) => {
   // if filepath is not exist, print the content of the system clipboard to the terminal
   // thanks to https://github.com/sindresorhus/clipboard-cli
   if (sourceContent == null) {
-    if (process.stdin.isTTY || process.env.STDIN === '0' || forcePaste) {
+    if (process.stdin.isTTY || process.env.STDIN === '0' || forcePaste || input != null) {
       // paste to file
       if (output != null) {
         logger.debug(`paste to ${output}.`)
